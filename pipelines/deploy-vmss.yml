@@ -1,0 +1,29 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - group: "SelfHostedAgents"
+
+stages:
+  - stage: terraform_vmss
+    displayName: Deploy VMSS
+    jobs:
+      - job: plan_apply_vmss
+        displayName: Terraform plan and apply
+        steps:
+          - checkout: self
+
+          - task: AzureCLI@2
+            displayName: Terraform init, plan and apply
+            inputs:
+              azureSubscription: "Self Hosted Agent"
+              scriptType: bash
+              scriptLocation: inlineScript
+              workingDirectory: "$(Build.SourcesDirectory)/infra-vmss"
+              inlineScript: |
+                terraform init -backend-config=./configuration/dev/backend.hcl
+                terraform plan -var-file=./configuration/dev/dev.tfvars -out=tfplan
+                terraform apply -auto-approve tfplan

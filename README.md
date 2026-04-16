@@ -63,6 +63,19 @@ This approach removes the limitations of Microsoft-hosted agents and enables:
 - Deploys VMSS and related resources
 - Links infrastructure to image versions
 
+##### `pipelines/deploy-sig.yml` and `pipelines/deploy-vmss.yml` optional improvement
+
+Add a Terraform install step before the AzureCLI task if you do not want to depend on agent image contents.
+
+Example:
+
+```yaml
+- script: |
+    curl -fsSL https://apt.releases.hashicorp.com/gpg | sudo apt-key add -
+    sudo apt-add-repository "deb https://apt.releases.hashicorp.com $(lsb_release -cs) main"
+    sudo apt-get update
+    sudo apt-get install -y terraform
+  displayName: Install Terraform
 ---
 
 ## 🔁 High-level flow
