@@ -76,6 +76,7 @@ Example:
     sudo apt-get update
     sudo apt-get install -y terraform
   displayName: Install Terraform
+```
 ---
 
 ## 🔁 High-level flow
