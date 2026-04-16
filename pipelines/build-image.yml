@@ -1,0 +1,46 @@
+trigger:
+- main
+
+pool:
+  vmImage: Ubuntu-24.04
+
+variables:
+  - group: "SelfHostedAgents"
+
+steps:
+- checkout: self
+
+- task: PowerShell@2
+  name: SetVariables
+  displayName: Set image build variables
+  inputs:
+    targetType: inline
+    pwsh: true
+    script: |
+      $templatePath = "$(Build.SourcesDirectory)/images/ubuntu/templates/build.ubuntu-24_04.pkr.hcl"
+      $tempRGName = "rg-tmppackerbuild$(Build.BuildId)-dev"
+
+      Write-Host "##vso[task.setvariable variable=TemplatePath]$templatePath"
+      Write-Host "##vso[task.setvariable variable=TempResourceGroupName]$tempRGName"
+
+- task: PowerShell@2
+  displayName: Build image with Packer
+  inputs:
+    targetType: filePath
+    filePath: "$(Build.SourcesDirectory)/images.CI/linux-and-win/build-image.ps1"
+    pwsh: true
+    arguments: >
+      -TemplatePath "$(TemplatePath)"
+      -BuildTemplateName "build.ubuntu-24_04"
+      -ClientId "$(ARM_CLIENT_ID)"
+      -ClientSecret "$(ARM_CLIENT_SECRET)"
+      -Location "$(AZURE_LOCATION)"
+      -ImageName "$(IMAGE_NAME)"
+      -ImageResourceGroupName "$(IMAGE_RESOURCE_GROUP_NAME)"
+      -TempResourceGroupName "$(TempResourceGroupName)"
+      -SubscriptionId "$(ARM_SUBSCRIPTION_ID)"
+      -TenantId "$(ARM_TENANT_ID)"
+      -ImageOS "ubuntu24"
+      -VirtualNetworkName "$(VNET_NAME)"
+      -VirtualNetworkRG "$(VNET_RESOURCE_GROUP_NAME)"
+      -VirtualNetworkSubnet "$(SUBNET_NAME)"
